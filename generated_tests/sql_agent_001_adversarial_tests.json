@@ -1,0 +1,158 @@
+[
+    {
+        "test_id": "AUTO_ADV_001",
+        "agent_id": "sql_agent_001",
+        "capability": "generate_sql",
+        "scenario": "missing_action",
+        "field_under_test": "action",
+        "category": "input_validation",
+        "input": {
+            "question": "x"
+        },
+        "expected_outcome": "rejected",
+        "expected_error_category": "input_validation",
+        "execution_mode": "generation_only",
+        "schema_source": "dynamic_capability_registry"
+    },
+    {
+        "test_id": "AUTO_ADV_002",
+        "agent_id": "sql_agent_001",
+        "capability": "generate_sql",
+        "scenario": "invalid_action_type",
+        "field_under_test": "action",
+        "category": "input_validation",
+        "input": {
+            "action": 12345,
+            "question": "x"
+        },
+        "expected_outcome": "rejected",
+        "expected_error_category": "input_validation",
+        "execution_mode": "generation_only",
+        "schema_source": "dynamic_capability_registry"
+    },
+    {
+        "test_id": "AUTO_ADV_003",
+        "agent_id": "sql_agent_001",
+        "capability": "generate_sql",
+        "scenario": "missing_question",
+        "field_under_test": "question",
+        "category": "input_validation",
+        "input": {
+            "action": "generate_sql"
+        },
+        "expected_outcome": "rejected",
+        "expected_error_category": "input_validation",
+        "execution_mode": "generation_only",
+        "schema_source": "dynamic_capability_registry"
+    },
+    {
+        "test_id": "AUTO_ADV_004",
+        "agent_id": "sql_agent_001",
+        "capability": "generate_sql",
+        "scenario": "invalid_question_type",
+        "field_under_test": "question",
+        "category": "input_validation",
+        "input": {
+            "action": "generate_sql",
+            "question": 12345
+        },
+        "expected_outcome": "rejected",
+        "expected_error_category": "input_validation",
+        "execution_mode": "generation_only",
+        "schema_source": "dynamic_capability_registry"
+    },
+    {
+        "test_id": "AUTO_ADV_005",
+        "agent_id": "sql_agent_001",
+        "capability": "generate_sql",
+        "scenario": "empty_question",
+        "field_under_test": "question",
+        "category": "input_validation",
+        "input": {
+            "action": "generate_sql",
+            "question": ""
+        },
+        "expected_outcome": "rejected",
+        "expected_error_category": "input_validation",
+        "execution_mode": "generation_only",
+        "schema_source": "dynamic_capability_registry"
+    },
+    {
+        "test_id": "AUTO_ADV_006",
+        "agent_id": "sql_agent_001",
+        "capability": "validate_sql",
+        "scenario": "missing_action",
+        "field_under_test": "action",
+        "category": "input_validation",
+        "input": {
+            "sql_query": "x"
+        },
+        "expected_outcome": "rejected",
+        "expected_error_category": "input_validation",
+        "execution_mode": "generation_only",
+        "schema_source": "dynamic_capability_registry"
+    },
+    {
+        "test_id": "AUTO_ADV_007",
+        "agent_id": "sql_agent_001",
+        "capability": "validate_sql",
+        "scenario": "invalid_action_type",
+        "field_under_test": "action",
+        "category": "input_validation",
+        "input": {
+            "action": 12345,
+            "sql_query": "x"
+        },
+        "expected_outcome": "rejected",
+        "expected_error_category": "input_validation",
+        "execution_mode": "generation_only",
+        "schema_source": "dynamic_capability_registry"
+    },
+    {
+        "test_id": "AUTO_ADV_008",
+        "agent_id": "sql_agent_001",
+        "capability": "validate_sql",
+        "scenario": "missing_sql_query",
+        "field_under_test": "sql_query",
+        "category": "input_validation",
+        "input": {
+            "action": "validate_sql"
+        },
+        "expected_outcome": "rejected",
+        "expected_error_category": "input_validation",
+        "execution_mode": "generation_only",
+        "schema_source": "dynamic_capability_registry"
+    },
+    {
+        "test_id": "AUTO_ADV_009",
+        "agent_id": "sql_agent_001",
+        "capability": "validate_sql",
+        "scenario": "invalid_sql_query_type",
+        "field_under_test": "sql_query",
+        "category": "input_validation",
+        "input": {
+            "action": "validate_sql",
+            "sql_query": 12345
+        },
+        "expected_outcome": "rejected",
+        "expected_error_category": "input_validation",
+        "execution_mode": "generation_only",
+        "schema_source": "dynamic_capability_registry"
+    },
+    {
+        "test_id": "AUTO_ADV_010",
+        "agent_id": "sql_agent_001",
+        "capability": "validate_sql",
+        "scenario": "empty_sql_query",
+        "field_under_test": "sql_query",
+        "category": "input_validation",
+        "input": {
+            "action": "validate_sql",
+            "sql_query": ""
+        },
+        "expected_outcome": "rejected",
+        "expected_error_category": "input_validation",
+        "execution_mode": "generation_only",
+        "schema_source": "dynamic_capability_registry"
+    }
+]

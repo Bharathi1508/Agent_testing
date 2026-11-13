@@ -1,0 +1,79 @@
+{
+  "catalog": "agent_testing",
+  "schema": "gold",
+  "verified": true,
+  "comparison": [
+    {
+      "table": "gold_account_balance_trends",
+      "expected_columns": 10,
+      "actual_columns": 10,
+      "matched": true,
+      "missing_columns": [],
+      "unexpected_columns": [],
+      "type_mismatches": {}
+    },
+    {
+      "table": "gold_branch_performance",
+      "expected_columns": 13,
+      "actual_columns": 13,
+      "matched": true,
+      "missing_columns": [],
+      "unexpected_columns": [],
+      "type_mismatches": {}
+    },
+    {
+      "table": "gold_complaint_metrics",
+      "expected_columns": 11,
+      "actual_columns": 11,
+      "matched": true,
+      "missing_columns": [],
+      "unexpected_columns": [],
+      "type_mismatches": {}
+    },
+    {
+      "table": "gold_customer_360",
+      "expected_columns": 25,
+      "actual_columns": 25,
+      "matched": true,
+      "missing_columns": [],
+      "unexpected_columns": [],
+      "type_mismatches": {}
+    },
+    {
+      "table": "gold_daily_transaction_analytics",
+      "expected_columns": 9,
+      "actual_columns": 9,
+      "matched": true,
+      "missing_columns": [],
+      "unexpected_columns": [],
+      "type_mismatches": {}
+    },
+    {
+      "table": "gold_fraud_analysis",
+      "expected_columns": 17,
+      "actual_columns": 17,
+      "matched": true,
+      "missing_columns": [],
+      "unexpected_columns": [],
+      "type_mismatches": {}
+    },
+    {
+      "table": "gold_kyc_compliance",
+      "expected_columns": 14,
+      "actual_columns": 14,
+      "matched": true,
+      "missing_columns": [],
+      "unexpected_columns": [],
+      "type_mismatches": {}
+    },
+    {
+      "table": "gold_loan_portfolio_summary",
+      "expected_columns": 18,
+      "actual_columns": 18,
+      "matched": true,
+      "missing_columns": [],
+      "unexpected_columns": [],
+      "type_mismatches": {}
+    }
+  ]
+}

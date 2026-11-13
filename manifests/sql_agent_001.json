@@ -1,0 +1,14 @@
+{
+    "agent_id": "sql_agent_001",
+    "name": "SQL Generation Agent",
+    "version": "1.0.0",
+    "framework": "LangGraph",
+    "environment": "development",
+    "capabilities": [
+        "generate_sql",
+        "validate_sql"
+    ],
+    "execution_type": "local",
+    "endpoint_name": null,
+    "status": "inactive"
+}

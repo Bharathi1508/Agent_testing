@@ -1,0 +1,118 @@
+﻿[
+    {
+        "Method":  "POST",
+        "Path":  "/sql/run"
+    },
+    {
+        "Method":  "POST",
+        "Path":  "/registry/register"
+    },
+    {
+        "Method":  "GET",
+        "Path":  "/registry/agents"
+    },
+    {
+        "Method":  "GET",
+        "Path":  "/registry/search"
+    },
+    {
+        "Method":  "POST",
+        "Path":  "/assurance/test/{agent_id}"
+    },
+    {
+        "Method":  "GET",
+        "Path":  "/api/assurance/summary"
+    },
+    {
+        "Method":  "GET",
+        "Path":  "/api/assurance/reports"
+    },
+    {
+        "Method":  "GET",
+        "Path":  "/api/assurance/reports/{report_id}"
+    },
+    {
+        "Method":  "GET",
+        "Path":  "/api/assurance/agents/{agent_id}/history"
+    },
+    {
+        "Method":  "GET",
+        "Path":  "/api/assurance/live/summary"
+    },
+    {
+        "Method":  "GET",
+        "Path":  "/api/assurance/live/reports"
+    },
+    {
+        "Method":  "GET",
+        "Path":  "/api/assurance/live/reports/{run_id}"
+    },
+    {
+        "Method":  "GET",
+        "Path":  "/api/assurance/live/trend"
+    },
+    {
+        "Method":  "GET",
+        "Path":  "/governance/health"
+    },
+    {
+        "Method":  "POST",
+        "Path":  "/governance/approve/{agent_id}"
+    },
+    {
+        "Method":  "POST",
+        "Path":  "/governance/reject/{agent_id}"
+    },
+    {
+        "Method":  "GET",
+        "Path":  "/governance/status/{agent_id}"
+    },
+    {
+        "Method":  "GET",
+        "Path":  "/governance/history/{agent_id}"
+    },
+    {
+        "Method":  "POST",
+        "Path":  "/supervisor/execute"
+    },
+    {
+        "Method":  "GET",
+        "Path":  "/supervisor/capabilities/{capability}/available"
+    },
+    {
+        "Method":  "GET",
+        "Path":  "/supervisor/capabilities/{capability}/agents"
+    },
+    {
+        "Method":  "GET",
+        "Path":  "/onboarding/health"
+    },
+    {
+        "Method":  "POST",
+        "Path":  "/onboarding/agents"
+    },
+    {
+        "Method":  "GET",
+        "Path":  "/"
+    },
+    {
+        "Method":  "GET",
+        "Path":  "/health"
+    },
+    {
+        "Method":  "POST",
+        "Path":  "/metadata/run"
+    },
+    {
+        "Method":  "POST",
+        "Path":  "/metadata/ask"
+    },
+    {
+        "Method":  "POST",
+        "Path":  "/metadata/ask-ai"
+    },
+    {
+        "Method":  "POST",
+        "Path":  "/supervisor/run"
+    }
+]

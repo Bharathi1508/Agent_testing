@@ -1,0 +1,15 @@
+{
+    "agent_id": "metadata_agent_001",
+    "name": "Databricks Metadata Agent",
+    "version": "1.0.0",
+    "framework": "langgraph",
+    "environment": "local",
+    "capabilities": [
+        "list_tables",
+        "get_columns",
+        "check_column"
+    ],
+    "execution_type": "local",
+    "endpoint_name": null,
+    "status": "active"
+}

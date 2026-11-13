@@ -1,0 +1,18 @@
+﻿{
+  "source": "local_reference_schema_v1",
+  "tables": {
+    "gold_loan_portfolio_summary": {
+      "loan_id": "string",
+      "customer_id": "string",
+      "credit_score": "int",
+      "principal_amount_inr": "double",
+      "loan_status": "string"
+    },
+    "gold_account_balance_trends": {
+      "account_id": "string",
+      "customer_id": "string",
+      "snapshot_date": "date",
+      "closing_balance_inr": "double"
+    }
+  }
+}

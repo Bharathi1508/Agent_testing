@@ -1,0 +1,30 @@
+{
+    "generate_sql": {
+        "properties": {
+            "action": {
+                "type": "string"
+            },
+            "question": {
+                "type": "string"
+            }
+        },
+        "required": [
+            "action",
+            "question"
+        ]
+    },
+    "validate_sql": {
+        "properties": {
+            "action": {
+                "type": "string"
+            },
+            "sql_query": {
+                "type": "string"
+            }
+        },
+        "required": [
+            "action",
+            "sql_query"
+        ]
+    }
+}

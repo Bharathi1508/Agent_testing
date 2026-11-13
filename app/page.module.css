@@ -1,0 +1,163 @@
+﻿.container {
+  max-width: 1250px;
+  margin: 0 auto;
+  padding: 36px 24px;
+  color: #e8eef7;
+}
+
+.header {
+  display: flex;
+  justify-content: space-between;
+  align-items: center;
+  gap: 16px;
+  border-bottom: 1px solid #293448;
+  padding-bottom: 24px;
+}
+
+.header h1 {
+  font-size: 32px;
+  font-weight: 800;
+  color: #65b7ff;
+}
+
+.header p, .intro p {
+  color: #9caec6;
+  margin-top: 8px;
+}
+
+.mode {
+  background: #273548;
+  color: #a9c9ff;
+  padding: 9px 14px;
+  border-radius: 20px;
+  font-size: 12px;
+  font-weight: 700;
+}
+
+.intro {
+  margin: 32px 0;
+}
+
+.intro h2, .panel h2 {
+  font-size: 22px;
+  margin-bottom: 14px;
+}
+
+.metrics {
+  display: grid;
+  grid-template-columns: repeat(4, minmax(0, 1fr));
+  gap: 18px;
+  margin-bottom: 30px;
+}
+
+.metric, .panel {
+  background: #192437;
+  border: 1px solid #304058;
+  border-radius: 14px;
+  padding: 24px;
+}
+
+.metric span {
+  color: #a7b6cb;
+  display: block;
+  margin-bottom: 12px;
+}
+
+.metric strong {
+  font-size: 32px;
+}
+
+.panel {
+  margin-bottom: 26px;
+}
+
+.tableWrap {
+  overflow-x: auto;
+}
+
+table {
+  width: 100%;
+  border-collapse: collapse;
+  text-align: left;
+}
+
+th, td {
+  padding: 15px 12px;
+  border-bottom: 1px solid #304058;
+  overflow-wrap: anywhere;
+}
+
+th {
+  color: #9db0ca;
+  font-size: 13px;
+}
+
+.pass, .fail, .unknown {
+  display: inline-block;
+  padding: 6px 12px;
+  border-radius: 20px;
+  font-size: 12px;
+  font-weight: 700;
+}
+
+.pass {
+  color: #70e3ae;
+  background: #174436;
+}
+
+.fail {
+  color: #ff9696;
+  background: #51272e;
+}
+
+.unknown {
+  color: #ffd58c;
+  background: #51402a;
+}
+
+.historyItem {
+  display: flex;
+  justify-content: space-between;
+  align-items: center;
+  gap: 16px;
+  padding: 16px 0;
+  border-bottom: 1px solid #304058;
+}
+
+.historyItem strong {
+  overflow-wrap: anywhere;
+}
+
+.historyItem p {
+  color: #9db0ca;
+  margin-top: 6px;
+  font-size: 13px;
+}
+
+.footer {
+  color: #9db0ca;
+  padding: 20px 0;
+  font-size: 13px;
+}
+
+.error {
+  color: #ff9696;
+  margin: 20px 0;
+}
+
+@media (max-width: 800px) {
+  .metrics {
+    grid-template-columns: repeat(2, minmax(0, 1fr));
+  }
+}
+
+@media (max-width: 480px) {
+  .metrics {
+    grid-template-columns: 1fr;
+  }
+
+  .header {
+    align-items: flex-start;
+    flex-direction: column;
+  }
+}

@@ -1,0 +1,42 @@
+{
+  "agent_id": "metadata_agent_001",
+  "status": "fixture_created_not_validated",
+  "test_cases": [
+    {
+      "test_id": "MET-001",
+      "capability": "check_column",
+      "input": {
+        "action": "check_column",
+        "table_name": "agent_testing.gold.gold_loan_portfolio_summary",
+        "column_name": "loan_id"
+      },
+      "expected": {
+        "column_exists": true
+      }
+    },
+    {
+      "test_id": "MET-002",
+      "capability": "check_column",
+      "input": {
+        "action": "check_column",
+        "table_name": "agent_testing.gold.gold_loan_portfolio_summary",
+        "column_name": "principal_amount_inr"
+      },
+      "expected": {
+        "column_exists": true
+      }
+    },
+    {
+      "test_id": "MET-003",
+      "capability": "check_column",
+      "input": {
+        "action": "check_column",
+        "table_name": "agent_testing.gold.gold_loan_portfolio_summary",
+        "column_name": "nonexistent_column_xyz"
+      },
+      "expected": {
+        "column_exists": false
+      }
+    }
+  ]
+}

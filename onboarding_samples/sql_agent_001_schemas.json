@@ -1,0 +1,28 @@
+{
+  "generate_sql": {
+    "required": ["action", "question"],
+    "properties": {
+      "action": {
+        "type": "string",
+        "const": "generate_sql"
+      },
+      "question": {
+        "type": "string",
+        "minLength": 1
+      }
+    }
+  },
+  "validate_sql": {
+    "required": ["action", "sql_query"],
+    "properties": {
+      "action": {
+        "type": "string",
+        "const": "validate_sql"
+      },
+      "sql_query": {
+        "type": "string",
+        "minLength": 1
+      }
+    }
+  }
+}

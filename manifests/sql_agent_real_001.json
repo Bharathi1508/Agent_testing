@@ -1,0 +1,14 @@
+{
+    "agent_id": "sql_agent_real_001",
+    "name": "HEAAP Real SQL Agent",
+    "version": "1.0.0",
+    "framework": "LangGraph",
+    "environment": "local",
+    "capabilities": [
+        "generate_sql",
+        "validate_sql"
+    ],
+    "execution_type": "local",
+    "endpoint_name": null,
+    "status": "inactive"
+}
