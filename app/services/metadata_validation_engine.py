@@ -4,10 +4,9 @@ from typing import Any
 import re
 
 
-# Independent, curated business rules.
-# These rules must be reviewed against actual Databricks schema
-# and agreed business definitions before production use.
-REFERENCE_RULES = [
+# Curated starter rules. A business owner must approve these definitions
+# before their results are treated as production semantic certification.
+BUSINESS_GLOSSARY = [
     {
         "rule_id": "LOAN_OVERDUE_CUSTOMERS",
         "patterns": [
@@ -22,6 +21,7 @@ REFERENCE_RULES = [
         ],
         "filter": "overdue_installments > 0",
         "join_required": False,
+        "relationships": [],
     },
     {
         "rule_id": "LOAN_REPAYMENT_BY_TYPE",
@@ -35,6 +35,7 @@ REFERENCE_RULES = [
         ],
         "filter": None,
         "join_required": False,
+        "relationships": [],
     },
     {
         "rule_id": "ACCOUNT_BALANCE_BY_DATE",
@@ -48,8 +49,28 @@ REFERENCE_RULES = [
         ],
         "filter": None,
         "join_required": False,
+        "relationships": [],
+    },
+    {
+        "rule_id": "KYC_OVERDUE_REVIEWS",
+        "patterns": [
+            r"\boverdue\b.*\bkyc\b.*\breviews?\b",
+            r"\bkyc\b.*\boverdue\b.*\breviews?\b",
+        ],
+        "table": "gold_kyc_compliance",
+        "required_columns": [
+            "customer_id",
+            "review_due_date",
+            "review_overdue",
+        ],
+        "filter": "review_overdue = TRUE",
+        "join_required": False,
+        "relationships": [],
     },
 ]
+
+REFERENCE_RULES = BUSINESS_GLOSSARY
+REFERENCE_AUTHORITY = "in_code_curated_rules_pending_business_owner_signoff"
 
 
 def normalize_columns(raw: Any) -> set[str]:
@@ -81,7 +102,7 @@ def match_reference(question: str):
 
     matches = [
         rule
-        for rule in REFERENCE_RULES
+        for rule in BUSINESS_GLOSSARY
         if any(
             re.search(pattern, normalized)
             for pattern in rule["patterns"]
@@ -121,9 +142,26 @@ def validate_metadata(
         return {
             "question": question,
             "primary_table": actual_table,
+            "expected_table": None,
+            "expected_columns": [],
+            "selected_columns": sorted(actual_columns),
+            "missing_columns": [],
+            "extra_columns": [],
+            "expected_filter": None,
+            "expected_relationships": [],
+            "reference_authority": REFERENCE_AUTHORITY,
             "validation_status": "REVIEW",
             "checks": {
-                "reference_definition": "UNAVAILABLE"
+                "reference_definition": "UNAVAILABLE",
+                "business_glossary": "UNAVAILABLE",
+                "table_correct": "NOT_VERIFIED",
+                "required_columns": "NOT_VERIFIED",
+                "column_minimality": "NOT_VERIFIED",
+                "live_schema": "NOT_VERIFIED",
+                "relationship_metadata": "UNAVAILABLE",
+                "filter_requirement": "NOT_TESTED",
+                "filter_application": "NOT_TESTED",
+                "result_validation": "NOT_TESTED",
             },
             "evidence": [
                 "No unique trusted business rule matched this question."
@@ -134,6 +172,8 @@ def validate_metadata(
     expected_table = rule["table"]
     expected_columns = set(rule["required_columns"])
 
+    checks["reference_definition"] = "PASS"
+    checks["business_glossary"] = "PASS"
     table_correct = (
         isinstance(actual_table, str)
         and actual_table.lower() == expected_table
@@ -189,11 +229,30 @@ def validate_metadata(
                 f"{missing_in_schema}"
             )
 
-    # A rule containing a filter is not evidence that the
-    # SQL Agent actually applied the filter.
-    checks["filter_validation"] = (
-        "NOT_TESTED" if rule["filter"] else "NOT_REQUIRED"
-    )
+    expected_filter = rule["filter"]
+    selected_filter = selection.get("expected_filter")
+    if expected_filter:
+        normalize_filter = lambda value: re.sub(
+            r"\s+", "", str(value or "").lower()
+        )
+        checks["filter_requirement"] = (
+            "PASS"
+            if normalize_filter(selected_filter)
+            == normalize_filter(expected_filter)
+            else "FAIL"
+        )
+    else:
+        checks["filter_requirement"] = "NOT_REQUIRED"
+    checks["filter_application"] = "NOT_TESTED"
+
+    expected_relationships = rule.get("relationships", [])
+    if not rule.get("join_required"):
+        checks["relationship_metadata"] = "NOT_REQUIRED"
+    elif expected_relationships and selection.get("relationships") == expected_relationships:
+        checks["relationship_metadata"] = "PASS"
+    else:
+        checks["relationship_metadata"] = "NOT_VERIFIED"
+
     checks["result_validation"] = "NOT_TESTED"
 
     failures = any(
@@ -203,20 +262,27 @@ def validate_metadata(
 
     if failures:
         status = "FAIL"
-    else:
-        # The engine has not yet independently validated
-        # generated SQL or query results.
+    elif (
+        checks["live_schema"] != "PASS"
+        or checks["column_minimality"] != "PASS"
+        or checks["relationship_metadata"] == "NOT_VERIFIED"
+    ):
         status = "REVIEW"
+    else:
+        status = "PASS"
 
     return {
         "question": question,
         "primary_table": actual_table,
         "expected_table": expected_table,
         "expected_columns": rule["required_columns"],
+        "expected_relationships": expected_relationships,
+        "join_required": rule.get("join_required", False),
         "selected_columns": sorted(actual_columns),
         "missing_columns": missing_columns,
         "extra_columns": extra_columns,
-        "expected_filter": rule["filter"],
+        "expected_filter": expected_filter,
+        "reference_authority": REFERENCE_AUTHORITY,
         "checks": checks,
         "validation_status": status,
         "evidence": evidence,

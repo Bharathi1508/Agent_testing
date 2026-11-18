@@ -28,6 +28,7 @@ def validate_with_live_schema(
     checks["table_exists"] = "NOT_VERIFIED"
     checks["selected_columns_exist"] = "NOT_VERIFIED"
     checks["live_schema"] = "NOT_VERIFIED"
+    checks["live_schema_query"] = "NOT_RUN"
 
     if not isinstance(table_name, str) or not table_name.strip():
         checks["table_exists"] = "FAIL"
@@ -50,6 +51,7 @@ def validate_with_live_schema(
 
             if table_name.lower() not in available_tables:
                 checks["table_exists"] = "FAIL"
+                checks["live_schema_query"] = "PASS"
                 evidence.append(
                     f"Selected table not found in catalog: {table_name}"
                 )
@@ -86,8 +88,11 @@ def validate_with_live_schema(
                     "FAIL" if missing_selected else "PASS"
                 )
                 checks["live_schema"] = (
-                    "FAIL" if missing_expected else "PASS"
-                ) if expected_columns else "NOT_VERIFIED"
+                    "FAIL"
+                    if missing_selected or missing_expected
+                    else "PASS"
+                )
+                checks["live_schema_query"] = "PASS"
 
                 evidence.append(
                     f"Live catalog contains {len(available_columns)} "
@@ -104,17 +109,34 @@ def validate_with_live_schema(
                     )
 
         except Exception as exc:
+            checks["live_schema_query"] = "ERROR"
             evidence.append(
                 "Live Databricks schema verification unavailable: "
                 f"{type(exc).__name__}: {exc}"
             )
 
-    if any(value == "FAIL" for value in checks.values()):
+    if checks.get("live_schema_query") == "ERROR":
+        result["validation_status"] = "ERROR"
+    elif any(value == "FAIL" for value in checks.values()):
         result["validation_status"] = "FAIL"
-    else:
-        # Semantic completeness, SQL filters and query results
-        # are not fully validated by schema checks.
+    elif (
+        checks.get("reference_definition") != "PASS"
+        or checks.get("table_correct") != "PASS"
+        or checks.get("required_columns") != "PASS"
+        or checks.get("column_minimality") != "PASS"
+        or checks.get("table_exists") != "PASS"
+        or checks.get("selected_columns_exist") != "PASS"
+        or checks.get("live_schema") != "PASS"
+        or checks.get("live_schema_query") != "PASS"
+        or checks.get("relationship_metadata") in (
+            "NOT_VERIFIED",
+            "UNAVAILABLE",
+        )
+    ):
+        # A schema-valid heuristic match is not semantic proof.
         result["validation_status"] = "REVIEW"
+    else:
+        result["validation_status"] = "PASS"
 
     result["sql_execution_allowed"] = False
 

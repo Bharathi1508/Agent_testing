@@ -1,12 +1,8 @@
 "use client";
 
-import DynamicMetadataAssurance from "../components/DynamicMetadataAssurance";
 import BusinessQuestionAssurance from "../components/BusinessQuestionAssurance";
-import SQLAssuranceOverview from "../components/SQLAssuranceOverview";
 import LiveAgentDiscovery from "../components/LiveAgentDiscovery";
 import AgentLastAssurance from "../components/AgentLastAssurance";
-import FunctionalAssuranceStatus from "../components/FunctionalAssuranceStatus";
-import MetadataAssuranceOverview from "../components/MetadataAssuranceOverview";
 
 import { useCallback, useEffect, useState } from "react";
 import DetailedAssuranceReport from "../components/DetailedAssuranceReport";
@@ -149,44 +145,6 @@ export default function Home() {
     </span>
   );
 
-  const recentAssurance = (
-    <div className="space-y-3">
-      {liveReports.length === 0 &&
-        <Empty text={liveError || "No assurance runs"} />}
-
-      {liveReports.slice(0, 5).map(run => (
-        <div
-          key={run.id}
-          className="flex items-center justify-between gap-3 border-b py-2"
-        >
-          <div>
-            <div className="text-xs font-semibold">
-              {run.agent_id}
-            </div>
-
-            <div className="text-xs text-slate-500">
-              Run #{run.id} - {new Date(run.created_at).toLocaleString()}
-            </div>
-
-            <div className="text-xs text-slate-500">
-              {run.assurance_type ?? "Agent execution test"}
-            </div>
-          </div>
-
-          <div className="text-right">
-            {statusBadge(run.status)}
-
-            <div className="mt-1 text-xs">
-              {run.score == null
-                ? "Not scored"
-                : `${run.score}% checks passed`}
-            </div>
-          </div>
-        </div>
-      ))}
-    </div>
-  );
-
   const assuranceTrend = (
     <div className="space-y-3">
       {liveTrend.length === 0 &&
@@ -315,6 +273,16 @@ export default function Home() {
   const inactive = agents.filter(a => a.status?.toLowerCase() === "inactive").length;
   const other = agents.length - active - inactive;
   const pct = (n: number) => agents.length ? Math.round(n / agents.length * 100) : 0;
+  const testingAgents = agents.filter(agent => {
+    const name = (agent.agent_name ?? agent.name ?? agent.agent_id).toLowerCase();
+    const capabilities = (agent.capabilities ?? []).map(item => item.toLowerCase());
+    return !name.includes("sql") &&
+      !capabilities.some(item => ["generate_sql", "validate_sql"].includes(item));
+  });
+  const testingActive = testingAgents.filter(agent => agent.status?.toLowerCase() === "active").length;
+  const testingInactive = testingAgents.filter(agent => agent.status?.toLowerCase() === "inactive").length;
+  const testingOther = testingAgents.length - testingActive - testingInactive;
+  const testingPct = (count: number) => testingAgents.length ? Math.round(count / testingAgents.length * 100) : 0;
   const nav = (name: Screen) => { setScreen(name); setResult(null); setError(""); };
   async function run(path: string, method = "GET") {
     setBusy(true); setResult(null); setError("");
@@ -340,6 +308,50 @@ export default function Home() {
   />
 </td>
     </tr>)}</tbody></table>{agents.length === 0 && <Empty text={loading ? "Loading agents..." : "No registered agents returned"} />}</div>;
+  const testingAgentTable = <div className="overflow-x-auto">
+    <table className="w-full min-w-[760px] text-left text-xs">
+      <thead className="bg-slate-50 text-slate-500">
+        <tr>
+          {["Business role", "Registered agent", "Responsibility in the POC", "Runtime status"].map(label => (
+            <th key={label} className="px-3 py-3 font-semibold">{label}</th>
+          ))}
+        </tr>
+      </thead>
+      <tbody>
+        {testingAgents.map(agent => {
+          const name = agent.agent_name ?? agent.name ?? agent.agent_id;
+          const capabilities = (agent.capabilities ?? []).map(item => item.toLowerCase());
+          const isMetadataAgent = name.toLowerCase().includes("metadata") ||
+            capabilities.some(item => ["list_tables", "get_columns", "check_column"].includes(item));
+          const role = isMetadataAgent
+            ? "Metadata Agent"
+            : "Supporting Agent";
+          const responsibility = isMetadataAgent
+            ? "Find Gold tables and retrieve columns for the business question."
+            : (agent.capabilities ?? []).map(item => item.replaceAll("_", " ")).join(", ") || "Registered platform capability.";
+          const activeStatus = agent.status?.toLowerCase() === "active";
+          return (
+            <tr key={agent.agent_id} className="border-t border-slate-100 align-top">
+              <td className="px-3 py-4">
+                <span className="rounded-full bg-indigo-50 px-2.5 py-1 font-semibold text-indigo-800">{role}</span>
+              </td>
+              <td className="px-3 py-4">
+                <div className="font-semibold text-slate-900">{name}</div>
+                <div className="mt-1 text-slate-500">{agent.agent_id}</div>
+              </td>
+              <td className="max-w-sm px-3 py-4 leading-5 text-slate-600">{responsibility}</td>
+              <td className="px-3 py-4">
+                <span className={`rounded-full px-2.5 py-1 font-semibold ${activeStatus ? "bg-emerald-100 text-emerald-800" : "bg-rose-100 text-rose-800"}`}>
+                  {activeStatus ? "AVAILABLE" : (agent.status ?? "UNKNOWN").toUpperCase()}
+                </span>
+              </td>
+            </tr>
+          );
+        })}
+      </tbody>
+    </table>
+    {testingAgents.length === 0 && <Empty text={loading ? "Loading registered testing agents..." : "No metadata or supporting agents returned"} />}
+  </div>;
   const action = (label: string, destination: Screen, symbol: string) => <button key={label} onClick={() => nav(destination)} className="flex min-h-12 items-center gap-2 rounded-lg border border-slate-200 bg-white px-3 text-left text-xs font-semibold text-slate-800 hover:border-indigo-300 hover:bg-indigo-50"><span className="text-lg text-indigo-600">{symbol}</span>{label}</button>;
   return <div className="flex min-h-screen bg-[#f5f7fc] text-slate-900">
     <aside className="sticky top-0 flex h-screen w-60 shrink-0 flex-col bg-[#07142f] text-white">
@@ -347,64 +359,25 @@ export default function Home() {
       <nav className="flex-1 space-y-1 overflow-y-auto p-3">{screens.map(s => <button key={s.name} onClick={() => nav(s.name)} className={`flex w-full items-center gap-3 rounded-lg px-4 py-3 text-left text-sm ${screen === s.name ? "bg-gradient-to-r from-indigo-600 to-violet-600 font-semibold text-white" : "text-slate-300 hover:bg-slate-800"}`}><span className="w-5 text-lg">{s.icon}</span>{s.name}</button>)}</nav>
       <div className="m-3 rounded-lg border border-slate-700 px-3 py-3 text-xs"><div className="font-semibold"><span className={health.toLowerCase() === "healthy" ? "text-green-400" : "text-amber-400"}>Online:</span> Backend: {health}</div><div className="mt-2 text-slate-400">FastAPI - Local POC</div></div>
     </aside>
-    <main className="min-w-0 flex-1"><header className="flex flex-wrap items-center justify-between gap-3 border-b border-slate-200 bg-white px-6 py-5"><div><h1 className="text-2xl font-bold">{screen}</h1><p className="text-sm text-slate-500">Monitor agents, testing, approvals and supervisor operations.</p></div><div className="flex items-center gap-2"><span className="hidden text-xs text-slate-500 lg:block">{updated ? `Last updated: ${updated}` : "Connecting..."}</span><button onClick={() => { void refresh(); void refreshLive(); }} className="rounded-lg border border-slate-200 px-3 py-2 text-sm hover:bg-slate-50">Refresh: Refresh</button><button onClick={() => nav("Dynamic Supervisor")} className="rounded-lg bg-indigo-600 px-4 py-2 text-sm font-semibold text-white hover:bg-indigo-700">Run: Run Supervisor</button></div></header>
+    <main className="min-w-0 flex-1"><header className="flex flex-wrap items-center justify-between gap-3 border-b border-slate-200 bg-white px-6 py-5"><div><h1 className="text-2xl font-bold">{screen === "Overview" ? "Business Query Testing" : screen}</h1><p className="text-sm text-slate-500">{screen === "Overview" ? "Test business questions against Gold metadata, independent checks, and safe SQL execution." : "Monitor agents, testing, approvals and supervisor operations."}</p></div><div className="flex items-center gap-2"><span className="hidden text-xs text-slate-500 lg:block">{updated ? `Last updated: ${updated}` : "Connecting..."}</span><button onClick={() => { void refresh(); void refreshLive(); }} className="rounded-lg border border-slate-200 px-3 py-2 text-sm hover:bg-slate-50">Refresh</button>{screen === "Overview" ? <a href="/business-query-assurance" className="rounded-lg bg-indigo-600 px-4 py-2 text-sm font-semibold text-white hover:bg-indigo-700">Open assurance pipeline</a> : <button onClick={() => nav("Dynamic Supervisor")} className="rounded-lg bg-indigo-600 px-4 py-2 text-sm font-semibold text-white hover:bg-indigo-700">Run Supervisor</button>}</div></header>
       <div className="mx-auto max-w-[1500px] space-y-4 p-5">{error && <div className="rounded-lg border border-red-200 bg-red-50 p-3 text-sm text-red-700">{error}</div>}
 {liveError && <div className="rounded-lg border border-amber-200 bg-amber-50 p-3 text-sm text-amber-800">Live assurance: {liveError}</div>}
         {screen === "Overview" && <>
-          <div className="grid gap-3 sm:grid-cols-2 lg:grid-cols-5">{[
-            { label: "Registered Agents", value: agents.length, icon: "♙", color: "text-indigo-600", sub: "Live registry" },
-            { label: "Active Agents", value: active, icon: "✓", color: "text-green-600", sub: `${pct(active)}% of registered` },
-            { label: "Assurance Tests", value: <FunctionalAssuranceStatus variant="card" />, icon: "✓", color: "text-green-600", sub: "Latest functional metadata assurance" },
+<BusinessQuestionAssurance />
+          <div className="grid gap-3 sm:grid-cols-2 lg:grid-cols-4">{[
+            { label: "POC Agents", value: testingAgents.length, icon: "♙", color: "text-indigo-600", sub: "Metadata and supporting agents" },
+            { label: "Active POC Agents", value: testingActive, icon: "✓", color: "text-green-600", sub: `${testingPct(testingActive)}% of POC agents` },
             { label: "Pending Approvals", value: "-", icon: "▤", color: "text-orange-600", sub: "Queue API not connected" },
             { label: "Platform Health", value: health, icon: "⬡", color: "text-green-600", sub: "FastAPI health endpoint" },
           ].map(k => <div key={k.label} className="min-h-32 rounded-xl border border-slate-200 bg-white p-4 shadow-sm"><div className="flex items-center gap-2"><span className={`text-2xl ${k.color}`}>{k.icon}</span><span className="text-xs font-semibold">{k.label}</span></div><div className="mt-2 text-2xl font-bold">{loading ? "..." : k.value}</div><div className="mt-1 text-[11px] text-slate-500">{k.sub}</div></div>)}</div>
-          <div className="mb-4 rounded-xl border border-slate-200 bg-white p-5 shadow-sm">
-  <h3 className="mb-3 text-sm font-semibold text-slate-900">
-    Functional Assurance Tests
-  </h3>
-  <FunctionalAssuranceStatus variant="card" />
-</div>
-<MetadataAssuranceOverview />
-<DynamicMetadataAssurance />
-<BusinessQuestionAssurance />
-<SQLAssuranceOverview />
-<div className="grid gap-4 xl:grid-cols-[1.35fr_1fr]"><Card title={`Registered Agents (${agents.length})`} action={<button onClick={() => nav("Agent Registry")} className="text-xs font-semibold text-indigo-600">View All â†’</button>}>{agentTable}</Card><Card title="Recent Assurance Results" action={<button onClick={() => nav("Reports & Analytics")} className="text-xs font-semibold text-indigo-600">View Reports â†’</button>}><div className="space-y-3">
-  <FunctionalAssuranceStatus variant="recent" />
-  <details className="border-t border-slate-200 pt-3">
-  <summary className="cursor-pointer text-xs font-semibold text-slate-600">
-    View Historical Assurance Runs
-  </summary>
-  <div className="mt-3">
-    {recentAssurance}
+<Card title={`AI Testing Agent Readiness (${testingAgents.length})`} action={<button onClick={() => nav("Agent Registry")} className="text-xs font-semibold text-indigo-600">Open agent registry →</button>}>
+  {testingAgentTable}
+  <div className="mt-4 rounded-lg border border-indigo-100 bg-indigo-50 px-4 py-3 text-xs leading-5 text-indigo-950">
+    <strong>Independent supervisor:</strong> The pipeline separately validates Unity Catalog metadata, available glossary and relationship evidence, semantic alignment, SQL structure, and query results. These gates—not the registry badge alone—decide whether execution is allowed.
   </div>
-</details>
-</div></Card></div>
-          <div className="grid gap-4 lg:grid-cols-3"><Card title="Assurance Test Trend">
-  <div className="space-y-4">
-    <FunctionalAssuranceStatus variant="recent" />
-    <details className="border-t border-slate-200 pt-3">
-      <summary className="cursor-pointer text-xs font-semibold text-indigo-600">
-        View Historical Trend
-      </summary>
-      <div className="mt-3">
-        {assuranceTrend}
-      </div>
-    </details>
-  </div>
-</Card><Card title="Agent Status Distribution"><div className="flex flex-wrap items-center justify-center gap-5 py-3"><div className="relative flex h-40 w-40 items-center justify-center rounded-full" style={{ background: agents.length ? `conic-gradient(#16a34a 0 ${pct(active)}%, #fb923c ${pct(active)}% ${pct(active)+pct(inactive)}%, #94a3b8 ${pct(active)+pct(inactive)}% 100%)` : "#e2e8f0" }}><div className="flex h-28 w-28 flex-col items-center justify-center rounded-full bg-white"><span className="text-3xl font-bold">{agents.length}</span><span className="text-xs">Agents</span></div></div><div className="space-y-2 text-xs"><div>ðŸŸ¢ Active ({active}) - {pct(active)}%</div><div>ðŸŸ  Inactive ({inactive}) - {pct(inactive)}%</div><div>âšª Other ({other}) - {pct(other)}%</div></div></div></Card><Card title="Quick Actions"><div className="grid grid-cols-2 gap-2">{action("Run Assurance Test", "Assurance Testing", "Run:")}{action("Register Agent", "Agent Registry", "+")}{action("Discover Agents", "Agent Discovery", "Agents:")}{action("Run Supervisor", "Dynamic Supervisor", "â—‡")}{action("Review Governance", "Governance", "HEAAP:")}{action("View Reports", "Reports & Analytics", "Queue:")}</div></Card></div>
-          <div className="grid gap-4 xl:grid-cols-[1.35fr_1fr]"><Card title="Latest Assurance Runs">
-  <div className="space-y-4">
-    <FunctionalAssuranceStatus variant="recent" />
-    <details className="border-t border-slate-200 pt-3">
-  <summary className="cursor-pointer text-xs font-semibold text-slate-600">
-    View Previous Assurance Runs
-  </summary>
-  <div className="mt-3">
-    {assuranceRuns}
-  </div>
-</details>
-  </div>
-</Card><Card title="Supervisor Execution (Multi-Agent)"><div className="space-y-2 text-sm text-slate-700"><p>OK Select a business-query test suite</p><p>OK Run checks across registered agents</p><p>OK Validate metadata, SQL and results</p><p>OK Generate a QA report and recommendations</p></div><button onClick={() => nav("Dynamic Supervisor")} className="mt-5 w-full rounded-lg bg-indigo-600 px-4 py-3 text-sm font-semibold text-white">Run: Open Supervisor</button><p className="mt-2 text-xs text-slate-500">Full multi-agent execution requires a verified backend endpoint.</p></Card></div>
+</Card>
+          <div className="grid gap-4 lg:grid-cols-2"><Card title="POC Agent Status"><div className="flex flex-wrap items-center justify-center gap-5 py-3"><div className="relative flex h-40 w-40 items-center justify-center rounded-full" style={{ background: testingAgents.length ? `conic-gradient(#16a34a 0 ${testingPct(testingActive)}%, #fb923c ${testingPct(testingActive)}% ${testingPct(testingActive)+testingPct(testingInactive)}%, #94a3b8 ${testingPct(testingActive)+testingPct(testingInactive)}% 100%)` : "#e2e8f0" }}><div className="flex h-28 w-28 flex-col items-center justify-center rounded-full bg-white"><span className="text-3xl font-bold">{testingAgents.length}</span><span className="text-xs">Agents</span></div></div><div className="space-y-2 text-xs"><div>ðŸŸ¢ Active ({testingActive}) - {testingPct(testingActive)}%</div><div>ðŸŸ  Inactive ({testingInactive}) - {testingPct(testingInactive)}%</div><div>âšª Other ({testingOther}) - {testingPct(testingOther)}%</div></div></div></Card><Card title="Quick Actions"><div className="grid grid-cols-2 gap-2">{action("Run Assurance Test", "Assurance Testing", "Run:")}{action("Register Agent", "Agent Registry", "+")}{action("Discover Agents", "Agent Discovery", "Agents:")}{action("Run Supervisor", "Dynamic Supervisor", "â—‡")}{action("Review Governance", "Governance", "HEAAP:")}{action("View Reports", "Reports & Analytics", "Queue:")}</div></Card></div>
+          <Card title="Supervisor Execution (Multi-Agent)"><div className="space-y-2 text-sm text-slate-700"><p>OK Select a business-query test suite</p><p>OK Run checks across registered agents</p><p>OK Validate metadata, SQL and results</p><p>OK Generate a QA report and recommendations</p></div><button onClick={() => nav("Dynamic Supervisor")} className="mt-5 w-full rounded-lg bg-indigo-600 px-4 py-3 text-sm font-semibold text-white">Run: Open Supervisor</button><p className="mt-2 text-xs text-slate-500">Full multi-agent execution requires a verified backend endpoint.</p></Card>
         </>}
         {screen === "Agent Registry" && <Card title="Live Agent Registry">{agentTable}</Card>}
         {screen === "Agent Discovery" && (

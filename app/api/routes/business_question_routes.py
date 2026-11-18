@@ -1,7 +1,10 @@
 from fastapi import APIRouter, HTTPException
 from pydantic import BaseModel, Field
+from app.config import DATABRICKS_CATALOG, DATABRICKS_SCHEMA
 from app.services.dynamic_business_metadata import retrieve_metadata, normalize_rows
+from app.services.live_metadata_validator import validate_with_live_schema
 from app.services.metadata_service import list_tables, get_columns
+from app.services.supervisor_metadata_selector import select_metadata
 
 router = APIRouter(prefix="/api/business-metadata", tags=["Business Metadata"])
 
@@ -10,6 +13,39 @@ class QuestionRequest(BaseModel):
 
 class BulkRequest(BaseModel):
     limit: int = Field(default=25, ge=1, le=100)
+
+
+@router.get("/catalog")
+def gold_catalog():
+    try:
+        tables = normalize_rows(list_tables(), ["table_name", "table_type"])
+        gold_tables = []
+        for table in tables:
+            table_name = str(table.get("table_name") or "")
+            if not table_name.lower().startswith("gold_"):
+                continue
+
+            columns = normalize_rows(
+                get_columns(table_name),
+                ["column_name", "data_type", "comment"],
+            )
+            gold_tables.append({
+                "table_name": table_name,
+                "table_type": table.get("table_type"),
+                "columns": columns,
+            })
+
+        return {
+            "catalog": DATABRICKS_CATALOG,
+            "schema": DATABRICKS_SCHEMA,
+            "source": "Databricks Unity Catalog",
+            "tables": gold_tables,
+        }
+    except Exception as exc:
+        raise HTTPException(
+            status_code=500,
+            detail=f"Gold-table metadata lookup failed: {exc}",
+        ) from exc
 
 
 def validate_candidate(candidate):
@@ -39,13 +75,37 @@ def evaluate(question):
             validated.append(validate_candidate(candidate))
         except Exception as exc:
             validated.append({**candidate, "schema_status": "ERROR", "semantic_status": "INCONCLUSIVE", "checks": [], "error": str(exc)})
+
+    selection = select_metadata(question, retrieval=result)
+    validation = validate_with_live_schema(question, selection)
+    validation_status = validation["validation_status"]
+    if validation_status == "PASS":
+        assurance_note = (
+            "A curated code reference and the live schema checks passed. "
+            "Business-owner signoff, SQL validation, and query-result "
+            "validation are separate checks."
+        )
+    elif validation_status == "FAIL":
+        assurance_note = (
+            "The proposed metadata conflicts with the approved reference "
+            "or live schema. SQL execution is blocked."
+        )
+    else:
+        assurance_note = (
+            "The metadata is not fully proven. Review the reference, live "
+            "schema, and filter checks before using it."
+        )
+
     return {
         "question": question,
         "status": result["status"],
         "total_candidates": result["total_candidates"],
         "relevant_metadata": validated,
-        "assurance_status": "INCONCLUSIVE",
-        "assurance_note": "Schema checks use current catalog metadata. Semantic relevance and completeness are not independently verified; SQL execution is not authorized by this result.",
+        "selection": selection,
+        "validation": validation,
+        "assurance_status": validation_status,
+        "assurance_note": assurance_note,
+        "sql_execution_allowed": False,
     }
 
 

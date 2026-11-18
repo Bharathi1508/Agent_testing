@@ -31,3 +31,9 @@
 /backups/
 /reports/
 /heaap-dashboard/.git/
+
+# Local HEAAP diagnostics and run state
+.heaap_backend_port
+/heaap_assurance_diagnostics.json
+/sql_pipeline_inspection.txt
+/frontend/proxy_backup_before_fix.txt

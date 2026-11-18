@@ -1,8 +1,8 @@
-import { NextRequest, NextResponse } from "next/server";
-const BACKEND = process.env.HEAAP_API_URL || "http://127.0.0.1:8000";
+﻿import { NextRequest, NextResponse } from "next/server";
+const BACKEND = process.env.HEAAP_API_URL || "http://127.0.0.1:8001";
 function permitted(path: string, method: string) {
-  if (method === "GET") return path === "api/dynamic-metadata/latest" || path === "health" || path === "registry/agents" || /^governance\/(status|history)\/[^/]+$/.test(path) || /^api\/assurance\/live\/(summary|trend|reports)$/.test(path) || /^api\/assurance\/live\/reports\/[0-9]+$/.test(path);
-  if (method === "POST") return path === "api/supervisor-metadata/select" || (path === "api/business-metadata/ask" || path === "api/business-metadata/bulk") || path === "api/dynamic-metadata/run" || /^assurance\/test\/[^/]+$/.test(path);
+  if (method === "GET") return path === "api/dynamic-metadata/latest" || path === "api/business-metadata/catalog" || path === "health" || path === "registry/agents" || /^governance\/(status|history)\/[^/]+$/.test(path) || /^api\/assurance\/live\/(summary|trend|reports)$/.test(path) || /^api\/assurance\/live\/reports\/[0-9]+$/.test(path);
+  if (method === "POST") return path === "api/supervisor-metadata/select" || path === "api/supervisor-metadata/validate" || path === "api/business-metadata/ask" || path === "api/business-metadata/bulk" || path === "api/dynamic-metadata/run" || /^assurance\/test\/[^/]+$/.test(path);
   return false;
 }
 async function proxy(request: NextRequest, context: {params: Promise<{path: string[]}>}) {

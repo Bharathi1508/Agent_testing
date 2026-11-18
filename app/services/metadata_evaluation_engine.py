@@ -19,6 +19,8 @@ def evaluate_metadata(
 
     expected_table = expected.get("primary_table")
     required = set(expected.get("required_columns") or [])
+    required_relationships = expected.get("relationships") or []
+    expected_filter = expected.get("filter")
 
     # Do not claim correctness without a trusted reference.
     if not expected_table or not required:
@@ -47,8 +49,31 @@ def evaluate_metadata(
 
     actual_columns = set(live_schema.get(table, []))
     invalid_columns = sorted(selected - actual_columns)
+    if expected_filter:
+        normalize_filter = lambda value: "".join(
+            str(value or "").lower().split()
+        )
+        filter_status = (
+            "PASS"
+            if normalize_filter(selection.get("expected_filter"))
+            == normalize_filter(expected_filter)
+            else "FAIL"
+        )
+    else:
+        filter_status = "NOT_REQUIRED"
+
+    if expected.get("join_required"):
+        relationship_status = (
+            "PASS"
+            if required_relationships
+            and selection.get("relationships") == required_relationships
+            else "REVIEW"
+        )
+    else:
+        relationship_status = "NOT_REQUIRED"
 
     checks = {
+        "business_glossary": "PASS",
         "table_correct": (
             "PASS" if table_correct else "FAIL"
         ),
@@ -66,7 +91,8 @@ def evaluate_metadata(
         "column_minimality": (
             "PASS" if not extra else "REVIEW"
         ),
-        "filter_validation": "NOT_TESTED",
+        "relationship_metadata": relationship_status,
+        "filter_requirement": filter_status,
         "result_validation": "NOT_TESTED",
     }
 
@@ -79,7 +105,10 @@ def evaluate_metadata(
 
     if any(checks[key] == "FAIL" for key in mandatory):
         status = "FAIL"
-    elif checks["column_minimality"] == "REVIEW":
+    elif (
+        checks["column_minimality"] == "REVIEW"
+        or checks["relationship_metadata"] == "REVIEW"
+    ):
         status = "REVIEW"
     else:
         status = "PASS"
@@ -90,6 +119,8 @@ def evaluate_metadata(
         "expected_table": expected_table,
         "selected_columns": sorted(selected),
         "required_columns": sorted(required),
+        "expected_filter": expected_filter,
+        "expected_relationships": required_relationships,
         "missing_columns": missing,
         "extra_columns": extra,
         "invalid_columns": invalid_columns,
