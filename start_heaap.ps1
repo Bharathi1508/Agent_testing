@@ -3,7 +3,7 @@ $ErrorActionPreference = "Stop"
 $root = $PSScriptRoot
 $frontend = Join-Path $root "frontend"
 $python = Join-Path $root ".venv\Scripts\python.exe"
-$backendUrl = "http://127.0.0.1:8001"
+$backendUrl = "http://127.0.0.1:8000"
 $frontendUrl = "http://127.0.0.1:3000"
 
 Write-Host "`n===== HEAAP STARTUP =====" -ForegroundColor Cyan
@@ -56,11 +56,11 @@ catch {
 if (-not $backendHealthy) {
 
     # Do not start another process if the port is occupied
-    $occupied = Test-NetConnection 127.0.0.1 -Port 8001 `
+    $occupied = Test-NetConnection 127.0.0.1 -Port 8000 `
         -InformationLevel Quiet -WarningAction SilentlyContinue
 
     if ($occupied) {
-        throw "Port 8001 is occupied by a non-HEAAP service. Inspect it before restarting."
+        throw "Port 8000 is occupied by a non-HEAAP service. Inspect it before restarting."
     }
 
     Write-Host "Starting HEAAP backend..." -ForegroundColor Cyan
@@ -71,7 +71,7 @@ if (-not $backendHealthy) {
             "-m", "uvicorn",
             "app.heaap_server:app",
             "--host", "127.0.0.1",
-            "--port", "8001"
+            "--port", "8000"
         ) `
         -WorkingDirectory $root
 

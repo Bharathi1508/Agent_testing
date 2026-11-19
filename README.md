@@ -53,7 +53,7 @@ may require an approved business reference and a tested SQL template.
    ```
 
    The helper expects the backend virtual environment at `.venv` and starts
-   the backend on port `8001` and frontend on port `3000`.
+   the backend on port `8000` and frontend on port `3000`.
 
 4. Open [http://localhost:3000](http://localhost:3000), enter a supported
    question, and select **Run metadata + SQL tests**. The report shows the
@@ -62,7 +62,7 @@ may require an approved business reference and a tested SQL template.
 
 The detailed pipeline report is at
 [http://localhost:3000/business-query-assurance](http://localhost:3000/business-query-assurance).
-The backend API docs are at [http://127.0.0.1:8001/docs](http://127.0.0.1:8001/docs).
+The backend API docs are at [http://127.0.0.1:8000/docs](http://127.0.0.1:8000/docs).
 
 ## Validation
 
